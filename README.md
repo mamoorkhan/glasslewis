@@ -317,6 +317,48 @@ You'll need **two separate app registrations** - one for the API and one for the
 
 > 🚨 **Troubleshooting Authentication**: If you get CORS errors or authentication failures, check our [Wiki: Authentication Troubleshooting](../../wiki/Authentication-Troubleshooting) for common solutions.
 
+## 🚀 CI/CD Pipeline
+
+Our platform uses a comprehensive GitHub Actions-based CI/CD pipeline that automatically builds, tests, and deploys applications across multiple environments with full Infrastructure as Code support.
+
+### Pipeline Overview
+
+- **Build & Test**: Automated building and testing of both .NET API and Angular client with comprehensive test coverage
+- **Infrastructure**: Automated Azure infrastructure provisioning using Bicep templates
+- **Deployment**: Progressive deployment across dev → qa → staging → preprod → prod environments
+- **Quality Gates**: Automated system and UI testing after each deployment
+- **Database**: Automated Entity Framework migrations with rollback support
+
+### Automated Triggers
+
+| Trigger | Action | Environments |
+|---------|--------|--------------|
+| **Push to main** | Build and test only | - |
+| **Create tag** (`v*`) | Full pipeline deployment | dev → qa → staging → preprod → prod |
+| **GitHub Release** | Full pipeline deployment | dev → qa → staging → preprod → prod |
+| **Manual dispatch** | Deploy specific release to chosen environment | Any environment |
+
+### Environment Progression
+
+Our deployment pipeline follows a strict progression model:
+
+```mermaid
+graph LR
+    A[Build & Test] --> B[Development]
+    B --> C[QA]
+    C --> D[Staging]
+    D --> E[Pre-Production]
+    E --> F[Production]
+    
+    style F fill:#ff6b6b,stroke:#ff5252,color:#fff
+    style E fill:#ffa726,stroke:#ff9800,color:#fff
+    style D fill:#ffee58,stroke:#ffeb3b,color:#000
+    style C fill:#66bb6a,stroke:#4caf50,color:#fff
+    style B fill:#42a5f5,stroke:#2196f3,color:#fff
+```
+
+Each environment requires the previous environment to deploy successfully before progression continues. Production deployments require manual approval for additional safety.
+
 ## 📁 Project Structure
 
 ```
@@ -628,6 +670,7 @@ For more detailed guides and troubleshooting, check out our **Wiki**:
 - **[Local Development Setup](https://github.com/mamoorkhan/glasslewis/wiki/local_development_setup.md)** - Development environment configuration
 
 ### Deployment & Operations
+- **[CI/CD Pipeline Guide](https://github.com/mamoorkhan/glasslewis/wiki/cicd_pipeline.md)** - Compreshensive guide to our pipelines
 - **[Production Deployment Checklist](https://github.com/mamoorkhan/glasslewis/wiki/production_deployment_checklist.md)** - Comprehensive deployment and verification guide
 
 ### Troubleshooting & Support
