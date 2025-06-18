@@ -665,17 +665,17 @@ Our REST API follows OpenAPI 3.0 specification:
 For more detailed guides and troubleshooting, check out our **Wiki**:
 
 ### Setup & Configuration
-- **[Azure Setup Guide](https://github.com/mamoorkhan/glasslewis/wiki/azure_setup_guide.md)** - Complete Azure Entra External ID and app registration setup
-- **[Azure Entra Configuration](https://github.com/mamoorkhan/glasslewis/wiki/azure_entra_configuration.md)** - Advanced user flows, branding, and enterprise features
-- **[Local Development Setup](https://github.com/mamoorkhan/glasslewis/wiki/local_development_setup.md)** - Development environment configuration
+- **[Azure Setup Guide](https://github.com/mamoorkhan/glasslewis/wiki/azure_setup_guide)** - Complete Azure Entra External ID and app registration setup
+- **[Azure Entra Configuration](https://github.com/mamoorkhan/glasslewis/wiki/azure_entra_configuration)** - Advanced user flows, branding, and enterprise features
+- **[Local Development Setup](https://github.com/mamoorkhan/glasslewis/wiki/local_development_setup)** - Development environment configuration
 
 ### Deployment & Operations
-- **[CI/CD Pipeline Guide](https://github.com/mamoorkhan/glasslewis/wiki/cicd_pipeline.md)** - Compreshensive guide to our pipelines
-- **[Production Deployment Checklist](https://github.com/mamoorkhan/glasslewis/wiki/production_deployment_checklist.md)** - Comprehensive deployment and verification guide
+- **[CI/CD Pipeline Guide](https://github.com/mamoorkhan/glasslewis/wiki/cicd_pipeline)** - Compreshensive guide to our pipelines
+- **[Production Deployment Checklist](https://github.com/mamoorkhan/glasslewis/wiki/production_deployment_checklist)** - Comprehensive deployment and verification guide
 
 ### Troubleshooting & Support
-- **[Authentication Troubleshooting](https://github.com/mamoorkhan/glasslewis/wiki/authentication_troubleshooting.md)** - Detailed solutions for common auth issues
-- **[Common Issues FAQ](https://github.com/mamoorkhan/glasslewis/wiki/common_issues.md)** - Quick answers to frequently encountered problems
+- **[Authentication Troubleshooting](https://github.com/mamoorkhan/glasslewis/wiki/authentication_troubleshooting)** - Detailed solutions for common auth issues
+- **[Common Issues FAQ](https://github.com/mamoorkhan/glasslewis/wiki/common_issues)** - Quick answers to frequently encountered problems
 
 ---
 
