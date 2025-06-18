@@ -1,0 +1,149 @@
+<div class="create-company-container">
+  <div class="card">
+    <div class="card-header">
+      <h2>Create New Company</h2>
+      <p class="subtitle">Add a new publicly traded company to the system</p>
+    </div>
+    
+    <div class="card-body">
+      <!-- Success Message -->
+      <div *ngIf="isSuccess" class="alert alert-success" role="alert">
+        <i class="fas fa-check-circle"></i>
+        {{ successMessage }}
+      </div>
+
+      <!-- Error Message -->
+      <div *ngIf="errorMessage" class="alert alert-danger" role="alert">
+        <i class="fas fa-exclamation-triangle"></i>
+        {{ errorMessage }}
+      </div>
+
+      <form [formGroup]="createCompanyForm" (ngSubmit)="onSubmit()">
+        <!-- Company Name -->
+        <div class="form-group">
+          <label for="name" class="form-label">
+            Company Name <span class="required">*</span>
+          </label>
+          <input 
+            type="text" 
+            id="name"
+            class="form-control"
+            [class.is-invalid]="isFieldInvalid('name')"
+            formControlName="name"
+            maxlength="200"
+            placeholder="Enter company name">
+          <div *ngIf="isFieldInvalid('name')" class="invalid-feedback">
+            {{ getFieldError('name') }}
+          </div>
+        </div>
+
+        <!-- Stock Ticker -->
+        <div class="form-group">
+          <label for="stockTicker" class="form-label">
+            Stock Ticker <span class="required">*</span>
+          </label>
+          <input 
+            type="text" 
+            id="stockTicker"
+            class="form-control ticker-input"
+            [class.is-invalid]="isFieldInvalid('stockTicker')"
+            formControlName="stockTicker"
+            maxlength="10"
+            placeholder="e.g., AAPL, TSLA"
+            style="text-transform: uppercase;">
+          <div *ngIf="isFieldInvalid('stockTicker')" class="invalid-feedback">
+            {{ getFieldError('stockTicker') }}
+          </div>
+          <small class="form-text text-muted">
+            Enter the stock ticker symbol (letters, numbers, and periods only)
+          </small>
+        </div>
+
+        <!-- Exchange -->
+        <div class="form-group">
+          <label for="exchange" class="form-label">
+            Exchange <span class="required">*</span>
+          </label>
+          <input 
+            type="text" 
+            id="exchange"
+            class="form-control"
+            [class.is-invalid]="isFieldInvalid('exchange')"
+            formControlName="exchange"
+            maxlength="100"
+            placeholder="e.g., NASDAQ, NYSE, LSE">
+          <div *ngIf="isFieldInvalid('exchange')" class="invalid-feedback">
+            {{ getFieldError('exchange') }}
+          </div>
+        </div>
+
+        <!-- ISIN -->
+        <div class="form-group">
+          <label for="isin" class="form-label">
+            ISIN Code <span class="required">*</span>
+          </label>
+          <input 
+            type="text" 
+            id="isin"
+            class="form-control"
+            [class.is-invalid]="isFieldInvalid('isin')"
+            formControlName="isin"
+            maxlength="12"
+            placeholder="e.g., US0378331005"
+            style="text-transform: uppercase;">
+          <div *ngIf="isFieldInvalid('isin')" class="invalid-feedback">
+            {{ getFieldError('isin') }}
+          </div>
+          <small class="form-text text-muted">
+            International Securities Identification Number (12 characters)
+          </small>
+        </div>
+
+        <!-- Website -->
+        <div class="form-group">
+          <label for="website" class="form-label">
+            Website
+          </label>
+          <input 
+            type="url" 
+            id="website"
+            class="form-control"
+            [class.is-invalid]="isFieldInvalid('website')"
+            formControlName="website"
+            maxlength="500"
+            placeholder="https://www.example.com">
+          <div *ngIf="isFieldInvalid('website')" class="invalid-feedback">
+            {{ getFieldError('website') }}
+          </div>
+          <small class="form-text text-muted">
+            Optional: Company's official website URL
+          </small>
+        </div>
+
+        <!-- Form Actions -->
+        <div class="form-actions">
+          <button 
+            type="submit" 
+            class="btn btn-primary"
+            [disabled]="isLoading">
+            <span *ngIf="isLoading" class="spinner-border spinner-border-sm" role="status" aria-hidden="true"></span>
+            <span *ngIf="isLoading">Creating...</span>
+            <span *ngIf="!isLoading">Create Company</span>
+          </button>
+          
+          <button 
+            type="button" 
+            class="btn btn-secondary"
+            (click)="resetForm()"
+            [disabled]="isLoading">
+            Reset
+          </button>
+
+          <button class="btn btn-secondary" (click)="goBack()">
+            Back
+          </button>
+        </div>
+      </form>
+    </div>
+  </div>
+</div>

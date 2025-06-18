@@ -1,0 +1,59 @@
+@GlassLewis.Api_HostAddress = http://localhost:5000
+
+### Get all companies
+GET {{GlassLewis.Api_HostAddress}}/api/v1/company
+Accept: application/json
+
+###
+
+### Get a company by ID
+GET {{GlassLewis.Api_HostAddress}}/api/v1/company/{id}
+Accept: application/json
+
+###
+
+### Create a new company
+POST {{GlassLewis.Api_HostAddress}}/api/v1/company
+Content-Type: application/json
+Accept: application/json
+
+{
+  "name": "Example Company",
+  "stockTicker": "EXMPL",
+  "exchange": "NASDAQ",
+  "isin": "US1234567890",
+  "website": "https://example.com"
+}
+
+###
+
+### Update an existing company (PUT)
+PUT {{GlassLewis.Api_HostAddress}}/api/v1/company/{id}
+Content-Type: application/json
+Accept: application/json
+
+{
+  "name": "Updated Company",
+  "stockTicker": "UPDTE",
+  "exchange": "NYSE",
+  "isin": "US0987654321",
+  "website": "https://updated-example.com"
+}
+
+###
+
+### Partially update a company (PATCH)
+PATCH {{GlassLewis.Api_HostAddress}}/api/v1/company/{id}
+Content-Type: application/json
+Accept: application/json
+
+{
+  "name": "Partially Updated Company",
+  "website": "https://partial-update-example.com"
+}
+
+###
+
+### Delete a company
+DELETE {{GlassLewis.Api_HostAddress}}/api/v1/company/{id}
+Accept: application/json

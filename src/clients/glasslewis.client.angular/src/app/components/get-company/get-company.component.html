@@ -1,0 +1,58 @@
+<div class="company-detail-container">
+  <div *ngIf="loading" class="loading">
+    <p>Loading company details...</p>
+  </div>
+
+  <div *ngIf="error" class="error-message">
+    <p>{{ error }}</p>
+    <button (click)="retry()" class="retry-btn">Retry</button>
+  </div>
+
+  <div *ngIf="company && !loading" class="company-details">
+    <h1>{{ company.name }}</h1>
+    
+    <div class="company-info">
+      <div class="info-row">
+        <label for="company-id">Company ID:</label>
+        <span id="company-id">{{ company.id }}</span>
+      </div>
+      
+      <div class="info-row">
+        <label for="stock-ticker">Stock Ticker:</label>
+        <span id="stock-ticker" class="ticker">{{ company.stockTicker }}</span>
+      </div>
+      
+      <div class="info-row">
+        <label for="exchange">Exchange:</label>
+        <span id="exchange">{{ company.exchange }}</span>
+      </div>
+      
+      <div class="info-row">
+        <label for="isin">ISIN:</label>
+        <span id="isin">{{ company.isin }}</span>
+      </div>
+      
+      <div class="info-row" *ngIf="company.website">
+        <label for="company-website">Website:</label>
+        <a id="company-website" [href]="company.website" target="_blank" rel="noopener noreferrer">
+          {{ company.website }}
+        </a>
+      </div>
+      
+      <div class="info-row">
+        <label for="created-at">Created:</label>
+        <span id="created-at">{{ company.createdAt | date:'medium' }}</span>
+      </div>
+      
+      <div class="info-row">
+        <label for="last-updated">Last Updated:</label>
+        <span id="last-updated">{{ company.updatedAt | date:'medium' }}</span>
+      </div>
+    </div>
+  </div>
+  <div class="footer">
+    <button class="btn btn-primary" (click)="goBack()">
+      Back
+    </button>
+  </div>
+</div>

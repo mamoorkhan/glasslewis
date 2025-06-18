@@ -1,0 +1,334 @@
+<div class="company-list-container">
+  <!-- Header Section -->
+  <div class="header-section">
+    <div class="title-section">
+      <h1>Companies</h1>
+      <p class="subtitle">Manage publicly traded companies</p>
+    </div>
+    <div class="header-actions">
+      <button class="btn btn-primary" (click)="onCreate()">
+        <i class="icon">[+]</i>
+        Add Company
+      </button>
+      <button class="btn btn-secondary" (click)="refresh()" [disabled]="isLoading">
+        <i class="icon">[R]</i>
+        Refresh
+      </button>
+    </div>
+  </div>
+
+  <!-- Search and Filter Section -->
+  <div class="filter-section">
+    <div class="search-box">
+      <input 
+        type="text" 
+        class="form-control" 
+        placeholder="Search companies by name, ticker, exchange, or ISIN..."
+        [(ngModel)]="searchTerm"
+        (input)="onSearch()">
+      <i class="search-icon"></i>
+    </div>
+    <div class="results-info">
+      <span>Showing {{ paginatedCompanies.length }} of {{ totalItems }} companies</span>
+    </div>
+  </div>
+
+  <!-- Error Message -->
+  <div *ngIf="errorMessage" class="alert alert-danger">
+    <i class="icon"></i>
+    {{ errorMessage }}
+  </div>
+
+  <!-- Loading Spinner -->
+  <div *ngIf="isLoading" class="loading-container">
+    <div class="spinner"></div>
+    <p>Loading companies...</p>
+  </div>
+
+  <!-- Companies Table -->
+  <div *ngIf="!isLoading && !errorMessage" class="table-container">
+    <table class="companies-table">
+      <thead>
+        <tr>
+          <th (click)="sort('name')" class="sortable">
+            Company Name {{ getSortIcon('name') }}
+          </th>
+          <th (click)="sort('stockTicker')" class="sortable">
+            Ticker {{ getSortIcon('stockTicker') }}
+          </th>
+          <th (click)="sort('exchange')" class="sortable">
+            Exchange {{ getSortIcon('exchange') }}
+          </th>
+          <th (click)="sort('isin')" class="sortable">
+            ISIN {{ getSortIcon('isin') }}
+          </th>
+          <th>Website</th>
+          <th (click)="sort('createdAt')" class="sortable">
+            Created {{ getSortIcon('createdAt') }}
+          </th>
+          <th class="actions-column">Actions</th>
+        </tr>
+      </thead>
+      <tbody>
+        <tr *ngFor="let company of paginatedCompanies" class="company-row">
+          <td class="company-name">
+            <strong>{{ company.name }}</strong>
+          </td>
+          <td class="ticker">
+            <span class="ticker-badge">{{ company.stockTicker }}</span>
+          </td>
+          <td>{{ company.exchange }}</td>
+          <td class="isin">{{ company.isin }}</td>
+          <td class="website">
+            <a *ngIf="company.website" [href]="company.website" target="_blank" class="website-link">
+              Visit
+            </a>
+            <span *ngIf="!company.website" class="text-muted">—</span>
+          </td>
+          <td class="date">{{ formatDate(company.createdAt) }}</td>
+          <td class="actions">
+            <div class="action-buttons">
+              <button 
+                class="btn btn-sm btn-info" 
+                (click)="onView(company)"
+                title="View Details">
+                View
+              </button>
+              <button 
+                class="btn btn-sm btn-success" 
+                (click)="onViewByIsin(company)"
+                title="View by ISIN">
+                ISIN
+              </button>
+              <button 
+                class="btn btn-sm btn-warning" 
+                (click)="onUpdate(company)"
+                title="Update (PUT)">
+                Update
+              </button>
+              <button 
+                class="btn btn-sm btn-secondary" 
+                (click)="onPatch(company)"
+                title="Partial Update (PATCH)">
+                Patch
+              </button>
+              <button 
+                class="btn btn-sm btn-danger" 
+                (click)="onDelete(company)"
+                title="Delete">
+                Delete
+              </button>
+            </div>
+          </td>
+        </tr>
+      </tbody>
+    </table>
+
+    <!-- Empty State -->
+    <div *ngIf="paginatedCompanies.length === 0" class="empty-state">
+      <div class="empty-icon"></div>
+      <h3>No companies found</h3>
+      <p *ngIf="searchTerm">Try adjusting your search criteria</p>
+      <p *ngIf="!searchTerm">Start by adding your first company</p>
+      <button *ngIf="!searchTerm" class="btn btn-primary" (click)="onCreate()">
+        Add First Company
+      </button>
+    </div>
+  </div>
+
+  <!-- Pagination -->
+  <div *ngIf="totalPages > 1" class="pagination-container">
+    <div class="pagination">
+      <button 
+        class="btn btn-sm btn-secondary" 
+        (click)="goToPage(currentPage - 1)" 
+        [disabled]="currentPage === 1">
+        Previous
+      </button>
+      
+      <span class="page-info">
+        Page {{ currentPage }} of {{ totalPages }}
+      </span>
+      
+      <button 
+        class="btn btn-sm btn-secondary" 
+        (click)="goToPage(currentPage + 1)" 
+        [disabled]="currentPage === totalPages">
+        Next
+      </button>
+    </div>
+    
+    <div class="items-per-page">
+      <label>
+        Items per page:
+        <select [(ngModel)]="itemsPerPage" (change)="currentPage = 1">
+          <option value="5">5</option>
+          <option value="10">10</option>
+          <option value="25">25</option>
+          <option value="50">50</option>
+        </select>
+      </label>
+    </div>
+  </div>
+</div>
+
+<!-- View Company Modal -->
+<div
+  *ngIf="showViewModal"
+  class="modal-overlay"
+  tabindex="0"
+  role="dialog"
+  aria-modal="true"
+  (click)="closeViewModal()"
+  (keydown)="($event.key === 'Escape' || $event.key === 'Enter' || $event.key === ' ') && closeViewModal()"
+>
+  <div
+    class="modal-content"
+    tabindex="0"
+    (click)="$event.stopPropagation()"
+    (keydown)="($event.key === 'Escape' || $event.key === 'Enter' || $event.key === ' ') && closeViewModal()"
+  >
+    <div class="modal-header">
+      <h3>Company Details</h3>
+    </div>
+    <div class="modal-body" *ngIf="selectedCompany">
+      <div class="detail-grid">
+        <div class="detail-item">
+          <span class="detail-label">Company Name:</span>
+          <span>{{ selectedCompany.name }}</span>
+        </div>
+        <div class="detail-item">
+          <span class="detail-label">Stock Ticker:</span>
+          <span class="ticker-badge">{{ selectedCompany.stockTicker }}</span>
+        </div>
+        <div class="detail-item">
+          <span class="detail-label">Exchange:</span>
+          <span>{{ selectedCompany.exchange }}</span>
+        </div>
+        <div class="detail-item">
+          <span class="detail-label">ISIN:</span>
+          <span>{{ selectedCompany.isin }}</span>
+        </div>
+        <div class="detail-item">
+          <span class="detail-label">Website:</span>
+          <span>
+            <a *ngIf="selectedCompany.website" [href]="selectedCompany.website" target="_blank">
+              {{ selectedCompany.website }}
+            </a>
+            <span *ngIf="!selectedCompany.website" class="text-muted">Not provided</span>
+          </span>
+        </div>
+        <div class="detail-item">
+          <span class="detail-label">Created:</span>
+          <span>{{ formatDate(selectedCompany.createdAt) }}</span>
+        </div>
+        <div class="detail-item">
+          <span class="detail-label">Last Updated:</span>
+          <span>{{ formatDate(selectedCompany.updatedAt) }}</span>
+        </div>
+      </div>
+    </div>
+    <div class="modal-footer">
+      <button class="btn btn-primary" (click)="navigateToCompanyDetail()">
+        <i class="icon"></i>
+        View Details
+      </button>
+      <button class="btn btn-secondary" (click)="closeViewModal()">Close</button>
+    </div>
+  </div>
+</div>
+
+<!-- View by ISIN Modal -->
+<div
+  *ngIf="showViewByIsinModal"
+  class="modal-overlay"
+  tabindex="0"
+  (click)="closeViewByIsinModal()"
+  (keydown)="($event.key === 'Escape' || $event.key === 'Enter' || $event.key === ' ') && closeViewByIsinModal()"
+  aria-modal="true"
+  role="dialog">
+  <div
+    class="modal-content"
+    tabindex="0"
+    (click)="$event.stopPropagation()"
+    (keydown)="($event.key === 'Escape' || $event.key === 'Enter' || $event.key === ' ') && closeViewByIsinModal()">
+    <div class="modal-header">
+      <h3>Company ISIN Details</h3>
+    </div>
+    <div class="modal-body" *ngIf="selectedCompany">
+      <div class="detail-grid">
+        <div class="detail-item">
+          <span class="detail-label">ISIN Code:</span>
+          <span class="isin-highlight">{{ selectedCompany.isin }}</span>
+        </div>
+        <div class="detail-item">
+          <span class="detail-label">Company Name:</span>
+          <span>{{ selectedCompany.name }}</span>
+        </div>
+        <div class="detail-item">
+          <span class="detail-label">Stock Ticker:</span>
+          <span class="ticker-badge">{{ selectedCompany.stockTicker }}</span>
+        </div>
+        <div class="detail-item">
+          <span class="detail-label">Exchange:</span>
+          <span>{{ selectedCompany.exchange }}</span>
+        </div>
+        <div class="detail-item">
+          <span class="detail-label">Country Code:</span>
+          <span class="country-code">{{ getCountryFromIsin(selectedCompany.isin) }}</span>
+        </div>
+        <div class="detail-item">
+          <span class="detail-label">Security Identifier:</span>
+          <span class="security-id">{{ getSecurityIdFromIsin(selectedCompany.isin) }}</span>
+        </div>
+        <div class="detail-item">
+          <span class="detail-label">Check Digit:</span>
+          <span class="check-digit">{{ getCheckDigitFromIsin(selectedCompany.isin) }}</span>
+        </div>
+      </div>
+    </div>
+    <div class="modal-footer">
+      <button class="btn btn-primary" (click)="navigateToCompanyDetailByIsin()">
+        <i class="icon"></i>
+        View Details
+      </button>
+      <button class="btn btn-secondary" (click)="closeViewByIsinModal()">Close</button>
+    </div>
+  </div>
+</div>
+
+<!-- Delete Confirmation Modal -->
+<div
+  *ngIf="showDeleteModal"
+  class="modal-overlay"
+  tabindex="0"
+  (click)="closeDeleteModal()"
+  (keydown)="($event.key === 'Escape' || $event.key === 'Enter' || $event.key === ' ') && closeDeleteModal()"
+  aria-modal="true"
+  role="dialog">
+  <div
+    class="modal-content danger"
+    tabindex="0"
+    (click)="$event.stopPropagation()"
+    (keydown)="($event.key === 'Escape' || $event.key === 'Enter' || $event.key === ' ') && closeDeleteModal()">
+    <div class="modal-header">
+      <h3>Confirm Delete</h3>
+      <button
+        class="close-btn"
+        (click)="closeDeleteModal()"
+        (keydown)="($event.key === 'Enter' || $event.key === ' ' || $event.key === 'Escape') && closeDeleteModal()"
+        tabindex="0"
+        aria-label="Close">
+        [×]
+      </button>
+    </div>
+    <div class="modal-body" *ngIf="selectedCompany">
+      <p>Are you sure you want to delete <strong>{{ selectedCompany.name }}</strong>?</p>
+      <p class="warning-text">This action cannot be undone.</p>
+    </div>
+    <div class="modal-footer">
+      <button class="btn btn-secondary" (click)="closeDeleteModal()">Cancel</button>
+      <button class="btn btn-danger" (click)="confirmDelete()">Delete</button>
+    </div>
+  </div>
+</div>

@@ -1,0 +1,91 @@
+# deploy-to-environment.yml - Environment deployment workflow
+name: Deploy to Environment
+
+on:
+  workflow_call:
+    inputs:
+      environment:
+        required: true
+        type: string
+        description: 'Environment to deploy to (dev, qa, staging, preprod, prod)'
+      artifact_name:
+        required: true
+        type: string
+        description: 'Name of the artifact to deploy'
+      artifact_version:
+        required: true
+        type: string
+        description: 'Version of the artifact to deploy'
+      skip_tests:
+        required: false
+        type: boolean
+        default: false
+        description: 'Skip running system and UI tests'
+      skip_migrations:
+        required: false
+        type: boolean
+        default: false
+        description: 'Skip running database migrations'
+  workflow_dispatch:
+    inputs:
+      environment:
+        required: true
+        type: choice
+        description: 'Environment to deploy to'
+        options:
+          - dev
+          - qa
+          - staging
+          - preprod
+          - prod
+      artifact_name:
+        required: true
+        type: string
+        description: 'Name of the artifact to deploy'
+      artifact_version:
+        required: true
+        type: string
+        description: 'Version of the artifact to deploy'
+      skip_tests:
+        required: false
+        type: boolean
+        default: false
+        description: 'Skip running system and UI tests'
+      skip_migrations:
+        required: false
+        type: boolean
+        default: false
+        description: 'Skip running database migrations'
+
+jobs:
+  deploy-infrastructure:
+    uses: ./.github/workflows/deploy-infrastructure.yml
+    with:
+      environment: ${{ inputs.environment }}
+    secrets: inherit
+
+  run-migrations:
+    if: ${{ !inputs.skip_migrations }}
+    needs: [deploy-infrastructure]
+    uses: ./.github/workflows/run-migrations.yml
+    with:
+      environment: ${{ inputs.environment }}
+    secrets: inherit
+
+  deploy-applications:
+    needs: [deploy-infrastructure, run-migrations]
+    if: always() && needs.deploy-infrastructure.result == 'success' && (needs.run-migrations.result == 'success' || needs.run-migrations.result == 'skipped')
+    uses: ./.github/workflows/deploy-applications.yml
+    with:
+      environment: ${{ inputs.environment }}
+      artifact_name: ${{ inputs.artifact_name }}
+      artifact_version: ${{ inputs.artifact_version }}
+    secrets: inherit
+
+  run-post-deployment-tests:
+    if: ${{ !inputs.skip_tests }}
+    needs: [deploy-applications]
+    uses: ./.github/workflows/run-post-deployment-tests.yml
+    with:
+      environment: ${{ inputs.environment }}
+    secrets: inherit

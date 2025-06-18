@@ -1,0 +1,193 @@
+<div class="patch-company-container">
+  <h2>Update Company Details</h2>
+  
+  <!-- Loading indicator for data fetching -->
+  <div class="loading-container" *ngIf="isLoading">
+    <div class="spinner"></div>
+    <p>Loading company data...</p>
+  </div>
+
+  <!-- Info banner about partial updates -->
+  <div class="info-banner" *ngIf="!isLoading">
+    <div class="info-content">
+      <span class="info-icon">ℹ️</span>
+      <span>Only modified fields will be updated. Leave fields unchanged to keep current values.</span>
+    </div>
+  </div>
+
+  <form [formGroup]="patchCompanyForm" (ngSubmit)="onSubmit()" *ngIf="!isLoading">
+    <div class="form-group">
+      <label for="name">Company Name</label>
+      <div class="input-group">
+        <input
+          id="name"
+          type="text"
+          formControlName="name"
+          [class.error]="isFieldInvalid('name')"
+          [class.modified]="patchCompanyForm.get('name')?.dirty"
+          placeholder="Enter company name"
+        />
+        <button type="button" class="field-action-btn clear-btn" (click)="clearField('name')" title="Clear field">
+          ✕
+        </button>
+        <button type="button" class="field-action-btn restore-btn" (click)="restoreField('name')" title="Restore original">
+          ↶
+        </button>
+      </div>
+      <div class="error-message" *ngIf="isFieldInvalid('name')">
+        <span *ngIf="patchCompanyForm.get('name')?.errors?.['requiredNoWhitespace']">Company name is required and cannot be empty or contain only whitespace</span>
+        <span *ngIf="patchCompanyForm.get('name')?.errors?.['maxlength']">Company name cannot exceed 200 characters</span>
+      </div>
+    </div>
+
+    <div class="form-group">
+      <label for="stockTicker">Stock Ticker</label>
+      <div class="input-group">
+        <input
+          id="stockTicker"
+          type="text"
+          formControlName="stockTicker"
+          [class.error]="isFieldInvalid('stockTicker')"
+          [class.modified]="patchCompanyForm.get('stockTicker')?.dirty"
+          placeholder="e.g., AAPL"
+        />
+        <button type="button" class="field-action-btn clear-btn" (click)="clearField('stockTicker')" title="Clear field">
+          ✕
+        </button>
+        <button type="button" class="field-action-btn restore-btn" (click)="restoreField('stockTicker')" title="Restore original">
+          ↶
+        </button>
+      </div>
+      <div class="error-message" *ngIf="isFieldInvalid('stockTicker')">
+        <span *ngIf="patchCompanyForm.get('stockTicker')?.errors?.['requiredNoWhitespace']">Stock ticker is required and cannot be empty or contain only whitespace</span>
+        <span *ngIf="patchCompanyForm.get('stockTicker')?.errors?.['maxlength']">Stock ticker cannot exceed 10 characters</span>
+      </div>
+    </div>
+
+    <div class="form-group">
+      <label for="exchange">Exchange</label>
+      <div class="input-group">
+        <input
+          id="exchange"
+          type="text"
+          formControlName="exchange"
+          [class.error]="isFieldInvalid('exchange')"
+          [class.modified]="patchCompanyForm.get('exchange')?.dirty"
+          placeholder="e.g., NASDAQ"
+        />
+        <button type="button" class="field-action-btn clear-btn" (click)="clearField('exchange')" title="Clear field">
+          ✕
+        </button>
+        <button type="button" class="field-action-btn restore-btn" (click)="restoreField('exchange')" title="Restore original">
+          ↶
+        </button>
+      </div>
+      <div class="error-message" *ngIf="isFieldInvalid('exchange')">
+        <span *ngIf="patchCompanyForm.get('exchange')?.errors?.['requiredNoWhitespace']">Exchange is required and cannot be empty or contain only whitespace</span>
+        <span *ngIf="patchCompanyForm.get('exchange')?.errors?.['maxlength']">Exchange cannot exceed 100 characters</span>
+      </div>
+    </div>
+
+    <div class="form-group">
+      <label for="isin">ISIN</label>
+      <div class="input-group">
+        <input
+          id="isin"
+          type="text"
+          formControlName="isin"
+          [class.error]="isFieldInvalid('isin')"
+          [class.modified]="patchCompanyForm.get('isin')?.dirty"
+          placeholder="e.g., US0378331005"
+        />
+        <button type="button" class="field-action-btn clear-btn" (click)="clearField('isin')" title="Clear field">
+          ✕
+        </button>
+        <button type="button" class="field-action-btn restore-btn" (click)="restoreField('isin')" title="Restore original">
+          ↶
+        </button>
+      </div>
+      <div class="error-message" *ngIf="isFieldInvalid('isin')">
+        <span *ngIf="patchCompanyForm.get('isin')?.errors?.['requiredNoWhitespace']">ISIN is required and cannot be empty or contain only whitespace</span>
+        <span *ngIf="patchCompanyForm.get('isin')?.errors?.['pattern']">Please enter a valid ISIN (12 characters, alphanumeric)</span>
+      </div>
+    </div>
+
+    <div class="form-group">
+      <label for="website">Website</label>
+      <div class="input-group">
+        <input
+          id="website"
+          type="url"
+          formControlName="website"
+          [class.error]="isFieldInvalid('website')"
+          [class.modified]="patchCompanyForm.get('website')?.dirty"
+          placeholder="https://example.com"
+        />
+        <button type="button" class="field-action-btn clear-btn" (click)="clearField('website')" title="Clear field">
+          ✕
+        </button>
+        <button type="button" class="field-action-btn restore-btn" (click)="restoreField('website')" title="Restore original">
+          ↶
+        </button>
+      </div>
+      <div class="error-message" *ngIf="isFieldInvalid('website')">
+        <span *ngIf="patchCompanyForm.get('website')?.errors?.['pattern']">Please enter a valid URL</span>
+        <span *ngIf="patchCompanyForm.get('website')?.errors?.['maxlength']">Website URL cannot exceed 500 characters</span>
+      </div>
+    </div>
+
+    <!-- Changes summary -->
+    <div class="changes-summary" *ngIf="hasChanges()">
+      <h3>Changes to be applied:</h3>
+      <ul class="changes-list">
+        <li *ngIf="patchCompanyForm.get('name')?.dirty">
+          <strong>Company Name:</strong> {{ patchCompanyForm.get('name')?.value || '(cleared)' }}
+        </li>
+        <li *ngIf="patchCompanyForm.get('stockTicker')?.dirty">
+          <strong>Stock Ticker:</strong> {{ patchCompanyForm.get('stockTicker')?.value || '(cleared)' }}
+        </li>
+        <li *ngIf="patchCompanyForm.get('exchange')?.dirty">
+          <strong>Exchange:</strong> {{ patchCompanyForm.get('exchange')?.value || '(cleared)' }}
+        </li>
+        <li *ngIf="patchCompanyForm.get('isin')?.dirty">
+          <strong>ISIN:</strong> {{ patchCompanyForm.get('isin')?.value || '(cleared)' }}
+        </li>
+        <li *ngIf="patchCompanyForm.get('website')?.dirty">
+          <strong>Website:</strong> {{ patchCompanyForm.get('website')?.value || '(cleared)' }}
+        </li>
+      </ul>
+    </div>
+
+    <div class="form-actions">
+      <button 
+        type="submit" 
+        [disabled]="patchCompanyForm.invalid || isSubmitting || !hasChanges()" 
+        class="btn-primary"
+      >
+        {{ isSubmitting ? 'Updating...' : 'Update Company' }}
+      </button>
+      <button type="button" (click)="onReset()" class="btn-secondary" [disabled]="isSubmitting">
+        Reset Changes
+      </button>
+      <button type="button" (click)="onCancel()" class="btn-secondary" [disabled]="isSubmitting">
+        Cancel
+      </button>
+    </div>
+  </form>
+
+  <!-- Success Message -->
+  <div class="success-message" *ngIf="successMessage">
+    <div class="message-content">
+      <span class="success-icon">✓</span>
+      {{ successMessage }}
+    </div>
+  </div>
+
+  <!-- Error Message -->
+  <div class="error-message-container" *ngIf="errorMessage">
+    <div class="message-content">
+      <span class="error-icon">✗</span>
+      {{ errorMessage }}
+    </div>
+  </div>
+</div>

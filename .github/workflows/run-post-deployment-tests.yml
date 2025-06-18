@@ -1,0 +1,73 @@
+# reusable/run-post-deployment-tests.yml - Runs system and UI tests after deployment
+name: Run Post-Deployment Tests
+
+on:
+  workflow_call:
+    inputs:
+      environment:
+        required: true
+        type: string
+
+jobs:
+  system-tests:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      
+      - name: Setup .NET
+        uses: actions/setup-dotnet@v4
+        with:
+          dotnet-version: '8.0.x'
+      
+      - name: Set test environment variables
+        run: |
+          echo "API_BASE_URL=https://${{ inputs.environment }}.api.glasslewis.mamoorkhan.com" >> $GITHUB_ENV
+          echo "CLIENT_BASE_URL=https://${{ inputs.environment }}.client.glasslewis.mamoorkhan.com" >> $GITHUB_ENV
+          echo "TEST_ENVIRONMENT=${{ inputs.environment }}" >> $GITHUB_ENV
+      
+      - name: Run System Tests
+        run: |
+          dotnet test \
+            --filter Category=SystemTests \
+            --configuration Release \
+            --logger trx \
+            --results-directory ./TestResults/SystemTests
+      
+      - name: Upload System Test Results
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: system-test-results-${{ inputs.environment }}
+          path: ./TestResults/SystemTests/
+          retention-days: 7
+
+  ui-tests:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      
+      - name: Setup .NET
+        uses: actions/setup-dotnet@v4
+        with:
+          dotnet-version: '8.0.x'
+      
+      - name: Set test environment variables
+        run: |
+          echo "CLIENT_BASE_URL=https://${{ inputs.environment }}.client.glasslewis.mamoorkhan.com" >> $GITHUB_ENV
+          echo "TEST_ENVIRONMENT=${{ inputs.environment }}" >> $GITHUB_ENV
+      
+      - name: Run UI Tests
+        run: |
+          dotnet test \
+            --filter Category=UiTests \
+            --configuration Release \
+            --logger trx \
+            --results-directory ./TestResults/UITests
+      
+      - name: Upload UI Test Results
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: ui-test-results-${{ inputs.environment }}
+          path: ./TestResults/UITests/
+          retention-days: 7

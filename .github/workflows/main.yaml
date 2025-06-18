@@ -1,0 +1,70 @@
+# main.yml - Main CI workflow that builds and creates artifacts
+name: Main CI Pipeline
+
+on:
+  workflow_dispatch:
+  push:
+    branches:
+      - main
+  pull_request:
+    branches:
+      - main
+
+jobs:
+  build-and-test:
+    uses: ./.github/workflows/build-and-test.yml
+    secrets: inherit
+
+  # Deploy to dev automatically on main branch push
+  deploy-dev:
+    needs: [build-and-test]
+    uses: ./.github/workflows/deploy-to-environment.yml
+    with:
+      environment: dev
+      artifact_name: ${{ needs.build-and-test.outputs.artifact_name }}
+      artifact_version: ${{ needs.build-and-test.outputs.artifact_version }}
+    secrets: inherit
+
+  # Deploy to QA after dev deployment
+  deploy-qa:
+    if: github.event_name == 'push' && github.ref == 'refs/heads/main'
+    needs: [deploy-dev]
+    uses: ./.github/workflows/deploy-to-environment.yml
+    with:
+      environment: qa
+      artifact_name: ${{ needs.build-and-test.outputs.artifact_name }}
+      artifact_version: ${{ needs.build-and-test.outputs.artifact_version }}
+    secrets: inherit
+
+  # Deploy to staging after QA deployment
+  deploy-staging:
+    if: github.event_name == 'push' && github.ref == 'refs/heads/main'
+    needs: [deploy-qa]
+    uses: ./.github/workflows/deploy-to-environment.yml
+    with:
+      environment: staging
+      artifact_name: ${{ needs.build-and-test.outputs.artifact_name }}
+      artifact_version: ${{ needs.build-and-test.outputs.artifact_version }}
+    secrets: inherit
+
+  # Deploy to preprod after staging deployment
+  deploy-preprod:
+    if: github.event_name == 'push' && github.ref == 'refs/heads/main'
+    needs: [deploy-staging]
+    uses: ./.github/workflows/deploy-to-environment.yml
+    with:
+      environment: preprod
+      artifact_name: ${{ needs.build-and-test.outputs.artifact_name }}
+      artifact_version: ${{ needs.build-and-test.outputs.artifact_version }}
+    secrets: inherit
+
+  # Deploy to prod after preprod deployment (with manual approval via environment protection)
+  deploy-prod:
+    if: github.event_name == 'push' && github.ref == 'refs/heads/main'
+    needs: [deploy-preprod]
+    uses: ./.github/workflows/deploy-to-environment.yml
+    with:
+      environment: prod
+      artifact_name: ${{ needs.build-and-test.outputs.artifact_name }}
+      artifact_version: ${{ needs.build-and-test.outputs.artifact_version }}
+    secrets: inherit

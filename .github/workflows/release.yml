@@ -1,0 +1,30 @@
+# release.yml - Deploy specific releases to environments
+name: Release
+
+on:
+  release:
+    types: [published]
+  workflow_dispatch:
+    inputs:
+      release_tag:
+        required: true
+        type: string
+        description: 'Release tag to deploy'
+      environment:
+        required: true
+        type: choice
+        description: 'Environment to deploy to'
+        options:
+          - qa
+          - staging
+          - preprod
+          - prod
+
+jobs:
+  deploy-release:
+    uses: ./.github/workflows/deploy-to-environment.yml
+    with:
+      environment: ${{ inputs.environment || 'staging' }}
+      artifact_name: ${{ github.event.release.tag_name || inputs.release_tag }}
+      artifact_version: ${{ github.event.release.tag_name || inputs.release_tag }}
+    secrets: inherit

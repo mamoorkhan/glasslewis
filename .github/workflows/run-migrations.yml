@@ -1,0 +1,91 @@
+# New workflow: run-migrations.yml
+name: Run Database Migrations
+
+on:
+  workflow_call:
+    inputs:
+      environment:
+        required: true
+        type: string
+
+jobs:
+  run-migrations:
+    runs-on: ubuntu-latest
+    environment: ${{ inputs.environment }}
+    steps:
+      - uses: actions/checkout@v4
+      
+      - name: Setup .NET
+        uses: actions/setup-dotnet@v4
+        with:
+          dotnet-version: '8.0.x'
+      
+      - name: Install EF Core Tools
+        run: dotnet tool install --global dotnet-ef
+      
+      - name: Azure Login
+        uses: azure/login@v2
+        with:
+          creds: ${{ secrets.AZURE_CREDENTIALS }}
+      
+      - name: Get SQL Connection String
+        id: sql-connection
+        run: |
+          RESOURCE_GROUP="rg-glasslewis-${{ inputs.environment }}"
+          
+          # Get connection string from deployment outputs
+          CONNECTION_STRING=$(az deployment group show \
+            --resource-group $RESOURCE_GROUP \
+            --name main \
+            --query properties.outputs.connectionString.value \
+            -o tsv)
+          
+          echo "connection_string=${CONNECTION_STRING}" >> $GITHUB_OUTPUT
+          echo "Connection string retrieved successfully"
+      
+      - name: Restore .NET Dependencies
+        run: dotnet restore GlassLewis.sln
+      
+      - name: Build Solution
+        run: dotnet build GlassLewis.sln --configuration Release --no-restore
+      
+      - name: Run EF Migrations
+        env:
+          ConnectionStrings__DefaultConnection: ${{ steps.sql-connection.outputs.connection_string }}
+        run: |
+          echo "Running Entity Framework migrations..."
+          
+          # Find the main project with DbContext (adjust path as needed)
+          API_PROJECT="src/GlassLewis.Api/GlassLewis.Api.csproj"
+          
+          if [ -f "$API_PROJECT" ]; then
+            echo "Found API project: $API_PROJECT"
+            
+            # Update database with latest migrations
+            dotnet ef database update \
+              --project "$API_PROJECT" \
+              --configuration Release \
+              --verbose
+              
+            echo "Migrations completed successfully"
+          else
+            echo "Error: API project not found at $API_PROJECT"
+            echo "Available projects:"
+            find src -name "*.csproj" | head -10
+            exit 1
+          fi
+      
+      - name: Verify Database Connection
+        env:
+          ConnectionStrings__DefaultConnection: ${{ steps.sql-connection.outputs.connection_string }}
+        run: |
+          # Optional: Run a simple connectivity test
+          echo "Testing database connectivity..."
+          
+          # You can add a simple SQL query test here if needed
+          # For now, just confirm the connection string format
+          if [[ "${{ steps.sql-connection.outputs.connection_string }}" == *"sql-glasslewis-${{ inputs.environment }}"* ]]; then
+            echo "Connection string format verified"
+          else
+            echo "Warning: Connection string format unexpected"
+          fi

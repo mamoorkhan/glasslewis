@@ -1,0 +1,101 @@
+# reusable/build-and-test.yml - Builds all projects and creates artifacts
+name: Build and Test
+
+env:
+  angular-project: 'glasslewis.client.angular'
+  angular-directory: './src/clients/glasslewis.client.angular'
+
+on:
+  workflow_call:
+    outputs:
+      artifact_name:
+        description: 'Name of the created artifact'
+        value: ${{ jobs.create-artifacts.outputs.artifact_name }}
+      artifact_version:
+        description: 'Version of the created artifact'
+        value: ${{ jobs.create-artifacts.outputs.artifact_version }}
+
+jobs:
+  build-angular:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - name: Setup Node
+        uses: actions/setup-node@v4
+        with:
+          node-version: '22'
+      
+      - name: Install dependencies
+        run: npm install
+        working-directory: ${{ env.angular-directory }}
+      
+      - name: Lint
+        run: npm run lint
+        working-directory:  ${{ env.angular-directory }}
+      
+      - name: Unit Tests
+        run: npm test -- --watch=false --browsers=ChromeHeadless --code-coverage
+        working-directory:  ${{ env.angular-directory }}
+      
+        # We can build a separate copy for each environment if needed
+      - name: Build
+        run: npm run build
+        working-directory:  ${{ env.angular-directory }}
+
+      - name: Upload Angular Build Artifacts
+        uses: actions/upload-artifact@v4
+        with:
+          name: angular-build
+          path: ${{ env.angular-directory }}/dist/${{ env.angular-project }}/browser/
+          retention-days: 30
+
+  build-dotnet:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - name: Setup .NET
+        uses: actions/setup-dotnet@v4
+        with:
+          dotnet-version: '8.0.x'
+      
+      - name: Restore dependencies
+        run: dotnet restore GlassLewis.sln
+      
+      - name: Build solution
+        run: dotnet build GlassLewis.sln --configuration Release --no-restore
+      
+      - name: Run unit tests
+        run: dotnet test GlassLewis.sln --filter "(Category=UnitTests|Category=IntegrationTests)" --configuration Release --no-build --verbosity normal --collect:"XPlat Code Coverage"
+
+      - name: Publish API
+        run: dotnet publish src/GlassLewis.Api/GlassLewis.Api.csproj --configuration Release --output ./publish/api
+      
+      - name: Upload .NET API Artifacts
+        uses: actions/upload-artifact@v4
+        with:
+          name: dotnet-api
+          path: ./publish/api/
+          retention-days: 30
+      
+      - name: Upload Test Results
+        uses: actions/upload-artifact@v4
+        with:
+          name: test-results
+          path: ./**/TestResults/
+          retention-days: 7
+
+  create-artifacts:
+    needs: [build-angular, build-dotnet]
+    runs-on: ubuntu-latest
+    outputs:
+      artifact_name: ${{ steps.artifact-info.outputs.artifact_name }}
+      artifact_version: ${{ steps.artifact-info.outputs.artifact_version }}
+    steps:
+      - name: Generate artifact info
+        id: artifact-info
+        run: |
+          ARTIFACT_VERSION="${GITHUB_SHA:0:8}-$(date +%Y%m%d%H%M%S)"
+          ARTIFACT_NAME="glasslewis-app-${ARTIFACT_VERSION}"
+          echo "artifact_version=${ARTIFACT_VERSION}" >> $GITHUB_OUTPUT
+          echo "artifact_name=${ARTIFACT_NAME}" >> $GITHUB_OUTPUT
+          echo "Created artifact: ${ARTIFACT_NAME}"

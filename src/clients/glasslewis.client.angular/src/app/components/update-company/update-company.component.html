@@ -1,0 +1,114 @@
+<div class="update-company-container">
+  <h2>Update Company</h2>
+  
+  <!-- Loading indicator for data fetching -->
+  <div class="loading-container" *ngIf="isLoading">
+    <div class="spinner"></div>
+    <p>Loading company data...</p>
+  </div>
+
+  <form [formGroup]="updateCompanyForm" (ngSubmit)="onSubmit()" *ngIf="!isLoading">
+    <div class="form-group">
+      <label for="name">Company Name *</label>
+      <input
+        id="name"
+        type="text"
+        formControlName="name"
+        [class.error]="isFieldInvalid('name')"
+        placeholder="Enter company name"
+      />
+      <div class="error-message" *ngIf="isFieldInvalid('name')">
+        <span *ngIf="updateCompanyForm.get('name')?.errors?.['required']">Company name is required</span>
+        <span *ngIf="updateCompanyForm.get('name')?.errors?.['maxlength']">Company name cannot exceed 200 characters</span>
+      </div>
+    </div>
+
+    <div class="form-group">
+      <label for="stockTicker">Stock Ticker *</label>
+      <input
+        id="stockTicker"
+        type="text"
+        formControlName="stockTicker"
+        [class.error]="isFieldInvalid('stockTicker')"
+        placeholder="e.g., AAPL"
+      />
+      <div class="error-message" *ngIf="isFieldInvalid('stockTicker')">
+        <span *ngIf="updateCompanyForm.get('stockTicker')?.errors?.['required']">Stock ticker is required</span>
+        <span *ngIf="updateCompanyForm.get('stockTicker')?.errors?.['maxlength']">Stock ticker cannot exceed 10 characters</span>
+      </div>
+    </div>
+
+    <div class="form-group">
+      <label for="exchange">Exchange *</label>
+      <input
+        id="exchange"
+        type="text"
+        formControlName="exchange"
+        [class.error]="isFieldInvalid('exchange')"
+        placeholder="e.g., NASDAQ"
+      />
+      <div class="error-message" *ngIf="isFieldInvalid('exchange')">
+        <span *ngIf="updateCompanyForm.get('exchange')?.errors?.['required']">Exchange is required</span>
+        <span *ngIf="updateCompanyForm.get('exchange')?.errors?.['maxlength']">Exchange cannot exceed 100 characters</span>
+      </div>
+    </div>
+
+    <div class="form-group">
+      <label for="isin">ISIN *</label>
+      <input
+        id="isin"
+        type="text"
+        formControlName="isin"
+        [class.error]="isFieldInvalid('isin')"
+        placeholder="e.g., US0378331005"
+      />
+      <div class="error-message" *ngIf="isFieldInvalid('isin')">
+        <span *ngIf="updateCompanyForm.get('isin')?.errors?.['required']">ISIN is required</span>
+        <span *ngIf="updateCompanyForm.get('isin')?.errors?.['invalidIsin']">Please enter a valid ISIN (12 characters, alphanumeric)</span>
+      </div>
+    </div>
+
+    <div class="form-group">
+      <label for="website">Website</label>
+      <input
+        id="website"
+        type="url"
+        formControlName="website"
+        [class.error]="isFieldInvalid('website')"
+        placeholder="https://example.com"
+      />
+      <div class="error-message" *ngIf="isFieldInvalid('website')">
+        <span *ngIf="updateCompanyForm.get('website')?.errors?.['invalidUrl']">Please enter a valid URL</span>
+        <span *ngIf="updateCompanyForm.get('website')?.errors?.['maxlength']">Website URL cannot exceed 500 characters</span>
+      </div>
+    </div>
+
+    <div class="form-actions">
+      <button type="submit" [disabled]="updateCompanyForm.invalid || isSubmitting" class="btn-primary">
+        {{ isSubmitting ? 'Updating...' : 'Update Company' }}
+      </button>
+      <button type="button" (click)="onReset()" class="btn-secondary" [disabled]="isSubmitting">
+        Reset
+      </button>
+      <button type="button" (click)="goBack()" class="btn-secondary" [disabled]="isSubmitting">
+        Back
+      </button>
+    </div>
+  </form>
+
+  <!-- Success Message -->
+  <div class="success-message" *ngIf="successMessage">
+    <div class="message-content">
+      <span class="success-icon">✓</span>
+      {{ successMessage }}
+    </div>
+  </div>
+
+  <!-- Error Message -->
+  <div class="error-message-container" *ngIf="errorMessage">
+    <div class="message-content">
+      <span class="error-icon">✗</span>
+      {{ errorMessage }}
+    </div>
+  </div>
+</div>
